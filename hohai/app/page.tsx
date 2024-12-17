@@ -1,53 +1,48 @@
 "use client";
 
-import { useState, FormEvent } from 'react';
+import {  useState, FormEvent } from "react";
 
 type Message = {
-  sender: 'user' | 'bot';
+  sender: "user" | "bot";
   text: string;
 };
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
-    { sender: 'bot', text: 'Hello! How can I help you today?' },
+    { sender: "bot", text: "Hello! How can I help you today?" },
   ]);
-  const [input, setInput] = useState<string>('');
+  const [input, setInput] = useState<string>("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (input.trim() === '') return;
+    if (input.trim() === "") return;
 
-    // Add the user message to the chat with correct type
-    const newMessages: Message[] = [...messages, { sender: 'user', text: input }];
+    // Add the user message to the chat
+    const newMessages: Message[] = [...messages, { sender: "user", text: input }];
     setMessages(newMessages);
-    setInput('');
+    setInput("");
 
-    // Fetch bot response from the backend
-    const botResponse = await fetchBotResponse(input);
-
-    // Add bot response to the chat with correct type
-    setMessages([...newMessages, { sender: 'bot', text: botResponse }]);
-  };
-
-  const fetchBotResponse = async (message: string): Promise<string> => {
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message }),
+      // Call your API endpoint to get the response
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
       });
 
       if (!response.ok) {
-        throw new Error('Error fetching bot response');
+        throw new Error("Error fetching response");
       }
 
       const data = await response.json();
-      return data.response; // Return the bot response from the API
+      // Add the bot response to the chat
+      setMessages([...newMessages, { sender: "bot", text: data.response }]);
     } catch (error) {
-      console.error('Error:', error);
-      return 'Sorry, something went wrong.';
+      console.error("Error:", error);
+      setMessages([
+        ...newMessages,
+        { sender: "bot", text: "Sorry, I am unable to respond at the moment." },
+      ]);
     }
   };
 
@@ -60,7 +55,9 @@ export default function Home() {
             <div
               key={idx}
               className={`p-2 rounded-lg ${
-                msg.sender === 'bot' ? 'bg-blue-100 text-left' : 'bg-green-100 text-right'
+                msg.sender === "bot"
+                  ? "bg-blue-100 text-left"
+                  : "bg-green-100 text-right"
               }`}
             >
               {msg.text}
